@@ -20,10 +20,10 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
-    command: ["redis-server", "--save", "20", "1", "--loglevel", "warning"]
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
 
   opensearch:
-    image: opensearchproject/opensearch:2
+    image: opensearchproject/opensearch:2.9.0
     container_name: filterflow_opensearch
     environment:
       - discovery.type=single-node
@@ -38,29 +38,16 @@ services:
     volumes:
       - opensearch_data:/usr/share/opensearch/data
 
-  mailhog:
-    image: mailhog/mailhog
-    container_name: filterflow_mailhog
-    restart: unless-stopped
-    ports:
-      - "8025:8025"
-
-volumes:
-  db_data:
-  opensearch_data:
-    backend:
-    build: ./backend
+  backend:
+    build:
+      context: ./backend
     container_name: filterflow_backend
     restart: unless-stopped
     ports:
       - "5000:5000"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-    depends_on:
-      - db
-      - redis
-      - opensearch
-    command: npm run dev
+    env_file:
+      - .env
+
+volumes:
+  db_data:
+  opensearch_data:
