@@ -3,56 +3,61 @@ export default function Home() {
     <div
       style={{
         display: "flex",
+        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        flexDirection: "column",
         height: "100vh",
-        fontFamily: "Arial, sans-serif",
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
         background: "linear-gradient(135deg, #e0f7fa, #e3f2fd)",
         textAlign: "center",
         padding: "20px",
       }}
     >
-      {/* כותרת ראשית */}
       <h1
         style={{
           color: "#0070f3",
           fontSize: "3rem",
-          marginBottom: "0.5rem",
+          marginBottom: "10px",
         }}
       >
         🚀 FilterFlow עובד!
       </h1>
 
-      {/* תיאור קצר */}
       <p
         style={{
           color: "#333",
           fontSize: "1.2rem",
-          maxWidth: "400px",
-          marginBottom: "1.5rem",
+          maxWidth: "600px",
+          marginBottom: "20px",
         }}
       >
-        הצלחת לעדכן את הדף! עכשיו אתה מוכן להתחיל לפתח פיצ'רים אמיתיים.
+        🎉 הצלחת לעדכן את הדף ולעשות Deploy דרך Vercel!
       </p>
 
-      {/* כפתור ניווט */}
+      <p
+        style={{
+          color: "#555",
+          fontSize: "1rem",
+          maxWidth: "500px",
+        }}
+      >
+        עכשיו אתה מוכן להתחיל לפתח פיצ׳רים אמיתיים.
+      </p>
+
       <a
         href="/about"
         style={{
+          marginTop: "30px",
+          padding: "12px 24px",
           backgroundColor: "#0070f3",
           color: "#fff",
-          padding: "12px 24px",
           borderRadius: "8px",
           textDecoration: "none",
-          fontSize: "1.1rem",
+          fontWeight: "bold",
           boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-          transition: "all 0.3s ease",
         }}
-        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#005bb5")}
-        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#0070f3")}
       >
-        ➡️ לעמוד הבא
+        מעבר לעמוד אודות →
       </a>
     </div>
   );
