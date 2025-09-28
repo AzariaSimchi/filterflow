@@ -7,27 +7,27 @@ type Err = { ok: false; error: string };
 const DATA: Item[] = [
   {
     id: "1",
-    title: "מדריך למשתמש – FilterFlow",
-    description: "איך מחפשים במהירות ומקבלים תוצאות מיידיות.",
-    tags: ["מדריך", "חיפוש", "מהיר"]
+    title: "מדריך שימוש – FilterFlow",
+    description: "איך מחפשים במהירות ומקבלים תוצאות מדויקות.",
+    tags: ["חיפוש", "מהיר", "מדריך"],
   },
   {
     id: "2",
     title: "חיבור ל-Supabase",
-    description: "דוגמה איך לעבור מדאטה מקומי למסד נתונים אמיתי.",
-    tags: ["supabase", "database"]
+    description: "דוגמה איך לעבור דאטה מקומי למסד נתונים אמיתי.",
+    tags: ["supabase", "database"],
   },
   {
     id: "3",
     title: "עיצוב UX נקי",
-    description: "עקרונות ליצירת חוויה פשוטה ונעימה במובייל.",
-    tags: ["ux", "mobile", "design"]
+    description: "עקרונות ליצירת חווית משתמש פשוטה ונעימה.",
+    tags: ["ux", "mobile", "design"],
   },
   {
     id: "4",
-    title: "טיפים ל-Next.js",
-    description: "שימוש ב-API Routes, ניהול State, ודיבאונס.",
-    tags: ["nextjs", "tips"]
+    title: "שימוש ב-Next.js",
+    description: "וידאו על API Routes, ניהול State וטיפים.",
+    tags: ["nextjs", "tips"],
   }
 ];
 
@@ -36,11 +36,7 @@ const normalize = (s: string) =>
 
 function scoreItem(item: Item, q: string) {
   const nq = normalize(q);
-  const fields = [
-    normalize(item.title),
-    normalize(item.description),
-    normalize(item.tags.join(" "))
-  ];
+  const fields = [normalize(item.title), normalize(item.description), normalize(item.tags.join(" "))];
   let score = 0;
   if (fields[0].includes(nq)) score += 5;
   if (fields[1].includes(nq)) score += 2;
