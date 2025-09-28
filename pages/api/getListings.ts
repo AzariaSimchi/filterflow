@@ -1,10 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { supabase } from '@/lib/supabaseClient'
+import { supabase } from '../../lib/supabaseClient'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // שליפת כל הרשומות מהטבלה "listings"
-    const { data, error } = await supabase.from('listings').select('*')
+    const { data, error } = await supabase
+      .from('listings')
+      .select('*')
+      .order('id', { ascending: false })
 
     if (error) {
       return res.status(500).json({ error: error.message })
