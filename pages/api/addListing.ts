@@ -6,19 +6,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method Not Allowed' })
   }
 
-  const { title, description } = req.body
+  try {
+    const { title, description } = req.body
 
-  if (!title || !description) {
-    return res.status(400).json({ error: 'Missing title or description' })
+    if (!title || !description) {
+      return res.status(400).json({ error: 'Missing title or description' })
+    }
+
+    const { data, error } = await supabase
+      .from('listings')
+      .insert([{ title, description }])
+
+    if (error) {
+      console.error('Supabase insert error:', error)
+      return res.status(500).json({ error: error.message })
+    }
+
+    return res.status(200).json({ message: 'Listing added successfully', data })
+  } catch (err) {
+    console.error('Unexpected error:', err)
+    return res.status(500).json({ error: 'Internal server error' })
   }
-
-  const { data, error } = await supabase
-    .from('listings')
-    .insert([{ title, description }])
-
-  if (error) {
-    return res.status(500).json({ error: error.message })
-  }
-
-  return res.status(201).json({ message: 'Listing added successfully', data })
 }
