@@ -7,36 +7,42 @@ type Err = { ok: false; error: string };
 const DATA: Item[] = [
   {
     id: "1",
-    title: "מדריך שימוש – FilterFlow",
-    description: "איך מחפשים במהירות ומקבלים תוצאות מדויקות.",
-    tags: ["חיפוש", "מהיר", "מדריך"],
+    title: "מדריך לשימוש – FilterFlow",
+    description: "איך מחפשים מחירים ומקבלים תוצאות מהירות.",
+    tags: ["חיפוש", "מחיר", "מדריך"],
   },
   {
     id: "2",
-    title: "חיבור ל-Supabase",
-    description: "דוגמה איך לעבור דאטה מקומי למסד נתונים אמיתי.",
+    title: "התחברות ל-Supabase",
+    description: "דוגמה איך לעבור דאטה מקומי ולשמור נתונים מאוחדים.",
     tags: ["supabase", "database"],
   },
   {
     id: "3",
-    title: "עיצוב UX נקי",
-    description: "עקרונות ליצירת חווית משתמש פשוטה ונעימה.",
+    title: "עיצוב UX נעים",
+    description: "עקרונות ליצירת חווייה פשוטה ונעימה בממשק.",
     tags: ["ux", "mobile", "design"],
   },
   {
     id: "4",
-    title: "שימוש ב-Next.js",
-    description: "וידאו על API Routes, ניהול State וטיפים.",
+    title: "טיפים ל-Next.js",
+    description: "וידג׳טס, שימוש ב-API Routes וניהול State.",
     tags: ["nextjs", "tips"],
   }
 ];
 
+// פונקציה שמנקה ומנרמלת טקסט (כולל עברית)
 const normalize = (s: string) =>
   s.toLowerCase().normalize("NFKD").replace(/[\u0591-\u05C7]/g, "");
 
+// פונקציה שמחשבת ציון התאמה לפריט
 function scoreItem(item: Item, q: string) {
   const nq = normalize(q);
-  const fields = [normalize(item.title), normalize(item.description), normalize(item.tags.join(" "))];
+  const fields = [
+    normalize(item.title),
+    normalize(item.description),
+    normalize(item.tags.join(" "))
+  ];
   let score = 0;
   if (fields[0].includes(nq)) score += 5;
   if (fields[1].includes(nq)) score += 2;
@@ -44,10 +50,14 @@ function scoreItem(item: Item, q: string) {
   return score;
 }
 
+// ה-API עצמו
 export default function handler(req: NextApiRequest, res: NextApiResponse<Ok | Err>) {
   try {
     const q = String(req.query.q || "").trim();
-    if (!q) return res.status(200).json({ ok: true, results: DATA.slice(0, 4) });
+
+    if (!q) {
+      return res.status(200).json({ ok: true, results: DATA.slice(0, 4) });
+    }
 
     const scored = DATA
       .map((item) => ({ item, score: scoreItem(item, q) }))
