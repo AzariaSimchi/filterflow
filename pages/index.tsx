@@ -1,38 +1,59 @@
 export default function Home() {
   return (
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-      height: "100vh",
-      fontFamily: "Arial, sans-serif",
-      background: "linear-gradient(135deg, #e0f7fa, #f1f8ff)"
-    }}>
-      <h1 style={{ color: "#0070f3", fontSize: "3rem", marginBottom: "1rem" }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column",
+        height: "100vh",
+        fontFamily: "Arial, sans-serif",
+        background: "linear-gradient(135deg, #e0f7fa, #e3f2fd)",
+        textAlign: "center",
+        padding: "20px",
+      }}
+    >
+      {/* כותרת ראשית */}
+      <h1
+        style={{
+          color: "#0070f3",
+          fontSize: "3rem",
+          marginBottom: "0.5rem",
+        }}
+      >
         🚀 FilterFlow עובד!
       </h1>
-      <p style={{ color: "#333", fontSize: "1.3rem", marginBottom: "1.5rem" }}>
-        🎉 הצלחת לעדכן את הדף ולפרוס ל־Vercel בהצלחה!
+
+      {/* תיאור קצר */}
+      <p
+        style={{
+          color: "#333",
+          fontSize: "1.2rem",
+          maxWidth: "400px",
+          marginBottom: "1.5rem",
+        }}
+      >
+        הצלחת לעדכן את הדף! עכשיו אתה מוכן להתחיל לפתח פיצ'רים אמיתיים.
       </p>
-      <button
+
+      {/* כפתור ניווט */}
+      <a
+        href="/about"
         style={{
           backgroundColor: "#0070f3",
           color: "#fff",
-          border: "none",
           padding: "12px 24px",
           borderRadius: "8px",
-          fontSize: "1rem",
-          cursor: "pointer",
-          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)"
+          textDecoration: "none",
+          fontSize: "1.1rem",
+          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+          transition: "all 0.3s ease",
         }}
-        onClick={() => alert("הכפתור עובד! 🎯")}
+        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#005bb5")}
+        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#0070f3")}
       >
-        לחץ כאן לבדיקה
-      </button>
-      <p style={{ color: "#555", fontSize: "0.9rem", marginTop: "2rem" }}>
-        עכשיו אפשר להתחיל לפתח פיצ'רים אמיתיים.
-      </p>
+        ➡️ לעמוד הבא
+      </a>
     </div>
   );
 }
