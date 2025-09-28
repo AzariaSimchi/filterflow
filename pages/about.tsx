@@ -3,36 +3,51 @@ export default function About() {
     <div
       style={{
         display: "flex",
+        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        flexDirection: "column",
         height: "100vh",
-        fontFamily: "Arial, sans-serif",
-        background: "linear-gradient(135deg, #fff8e1, #ffecb3)",
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        background: "linear-gradient(135deg, #fce4ec, #e1bee7)",
         textAlign: "center",
+        padding: "20px",
       }}
     >
-      <h1 style={{ color: "#f57c00", fontSize: "2.5rem" }}>📄 עמוד חדש</h1>
-      <p style={{ color: "#333", fontSize: "1.2rem", maxWidth: "400px" }}>
-        ברוך הבא לעמוד הבא שלך! כאן תוכל להוסיף עוד תוכן, פיצ'רים ותפריטים.
+      <h1
+        style={{
+          color: "#6a1b9a",
+          fontSize: "2.5rem",
+          marginBottom: "15px",
+        }}
+      >
+        ℹ️ עמוד האודות
+      </h1>
+
+      <p
+        style={{
+          color: "#333",
+          fontSize: "1.2rem",
+          maxWidth: "600px",
+          marginBottom: "20px",
+        }}
+      >
+        זהו עמוד האודות שלך. כאן תוכל לספר על הפרויקט, עליך, או כל דבר שתרצה.
       </p>
 
       <a
         href="/"
         style={{
           marginTop: "20px",
-          backgroundColor: "#f57c00",
-          color: "#fff",
           padding: "10px 20px",
+          backgroundColor: "#6a1b9a",
+          color: "#fff",
           borderRadius: "8px",
           textDecoration: "none",
-          fontSize: "1rem",
-          transition: "all 0.3s ease",
+          fontWeight: "bold",
+          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
         }}
-        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#ef6c00")}
-        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#f57c00")}
       >
-        ⬅️ חזרה לעמוד הראשי
+        ← חזרה לדף הבית
       </a>
     </div>
   );
