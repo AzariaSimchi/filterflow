@@ -14,25 +14,25 @@ const DATA: Item[] = [
   {
     id: "1",
     title: "מדריך לשימוש – FilterFlow",
-    description: "איך מחפשים מחירים ומקבלים תוצאות מהירות ומדויקות.",
-    tags: ["מדריך", "חיפוש", "מחיר"],
+    description: "איך מחפשים מחירים ומקבלים תוצאות מהירות.",
+    tags: ["חיפוש", "מחיר", "מדריך"],
   },
   {
     id: "2",
     title: "חיבור ל-Supabase",
-    description: "דוגמה איך לעבור דאטה קומי ולחסוך נתונים מאוחסנים.",
+    description: "דוגמה איך לעבור דאטה מקומי למסד נתונים אמיתי.",
     tags: ["supabase", "database"],
   },
   {
     id: "3",
-    title: "עיצוב UX נקי",
-    description: "עקרונות ליצירת חוויית משתמש פשוטה ונעימה במובייל.",
+    title: "טיפים ל-UX",
+    description: "עקרונות ליצירת חווית משתמש פשוטה ונעימה במובייל.",
     tags: ["ux", "mobile", "design"],
   },
   {
     id: "4",
     title: "טיפים ל-Next.js",
-    description: "וידיאו על שימוש ב-API Routes, ניהול State וטיפים חשובים.",
+    description: "וידאו + מדריך על שימוש ב-API Routes וניהול State.",
     tags: ["nextjs", "tips"],
   },
 ];
@@ -61,7 +61,10 @@ export default function handler(
 ) {
   try {
     const q = String(req.query.q || "").trim();
-    if (!q) return res.status(200).json({ ok: true, results: DATA.slice(0, 4) });
+
+    if (!q) {
+      return res.status(200).json({ ok: true, results: DATA.slice(0, 4) });
+    }
 
     const scored = DATA
       .map((item) => ({ item, score: scoreItem(item, q) }))
