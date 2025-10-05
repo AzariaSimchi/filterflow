@@ -1,26 +1,31 @@
 import { supabase } from '../lib/supabaseClient'
 
-export default function TestPage({ data, error }) {
-  if (error) return <div>❌ שגיאה: {error.message}</div>
+type Props = {
+  data: any;
+  error: any;
+};
+
+export default function TestPage({ data, error }: Props) {
+  if (error) return <div>❌ שגיאה: {error.message}</div>;
 
   return (
     <div style={{ padding: 20 }}>
-      <h1>🚀 בדיקת חיבור לסופבייס</h1>
+      <h1>🚀 בדיקת חיבור ל־Supabase</h1>
       <pre>{JSON.stringify(data, null, 2)}</pre>
     </div>
-  )
+  );
 }
 
 export async function getServerSideProps() {
   const { data, error } = await supabase
-    .from('real_estate_listings') // 👈 שם הטבלה שלך בדיוק כמו בסופבייס
+    .from('real_estate_listings') // שנה כאן אם שם הטבלה שונה
     .select('*')
-    .limit(5)
+    .limit(5);
 
   return {
     props: {
       data: data || null,
-      error: error || null
-    }
-  }
+      error: error || null,
+    },
+  };
 }
