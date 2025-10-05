@@ -5,7 +5,7 @@ export default function TestPage({ data, error }) {
 
   return (
     <div style={{ padding: 20 }}>
-      <h1>🚀 בדיקת חיבור לסופאבייס</h1>
+      <h1>🚀 בדיקת חיבור לסופבייס</h1>
       <pre>{JSON.stringify(data, null, 2)}</pre>
     </div>
   )
@@ -13,7 +13,7 @@ export default function TestPage({ data, error }) {
 
 export async function getServerSideProps() {
   const { data, error } = await supabase
-    .from('real_estate_listings') // 👈 כאן שם הטבלה שלך
+    .from('real_estate_listings') // 👈 שם הטבלה שלך בדיוק כמו בסופבייס
     .select('*')
     .limit(5)
 
