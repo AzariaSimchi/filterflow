@@ -8,6 +8,9 @@ export default function Home() {
   const [filters, setFilters] = useState({ minPrice: "", maxPrice: "", type: "" });
   const [showFilters, setShowFilters] = useState(false);
 
+  // מודאל פרטים על נכס
+  const [selectedItem, setSelectedItem] = useState<any | null>(null);
+
   // פופ־אפ התראות
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [contactMethod, setContactMethod] = useState<"telegram" | "email">("telegram");
@@ -37,7 +40,6 @@ export default function Home() {
   };
 
   const submitNotify = async () => {
-    // ולידציה בסיסית
     if (contactMethod === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactValue)) {
       setNotifyMsg("מייל לא תקין");
       return;
@@ -62,7 +64,7 @@ export default function Home() {
       });
       const data = await res.json();
       if (data.ok) {
-        setNotifyMsg("נרשמת בהצלחה! תקבל התראות על נכסים מתאימים.");
+        setNotifyMsg("✅ נרשמת בהצלחה! תקבל התראות על נכסים מתאימים.");
         setContactValue("");
       } else {
         setNotifyMsg("שגיאה בשליחה: " + (data.error || ""));
@@ -128,39 +130,57 @@ export default function Home() {
       <section style={styles.results}>
         {results.length > 0 &&
           results.map((item) => (
-            <div key={item.id} style={styles.card}>
+            <div key={item.id} style={styles.card} onClick={() => setSelectedItem(item)}>
+              {item.image_url ? (
+                <img src={item.image_url} alt={item.title} style={styles.image} />
+              ) : (
+                <div style={styles.imagePlaceholder}>📷 אין תמונה</div>
+              )}
               <h3 style={styles.cardTitle}>{item.title}</h3>
-              <p style={styles.cardDesc}>{item.description}</p>
-              <div style={styles.tags}>
-                {item.tags.map((tag: string) => (
-                  <span key={tag} style={styles.tag}>#{tag}</span>
-                ))}
+              <p style={styles.cardDesc}>{item.description || "אין תיאור זמין"}</p>
+              <div style={styles.infoGrid}>
+                <span>📍 {item.location || "לא צוין"}</span>
+                <span>💰 {item.price ? `$${item.price.toLocaleString()}` : "N/A"}</span>
+                <span>💵 שכירות: {item.monthly_rent ? `$${item.monthly_rent}` : "N/A"}</span>
+                <span>📈 ROI: {item.roi ? `${item.roi}%` : "N/A"}</span>
               </div>
-              <button style={styles.notifyButton} onClick={openNotify}>📩 קבל התראה על נכסים דומים</button>
             </div>
           ))}
       </section>
+
+      {/* מודאל פרטים */}
+      {selectedItem && (
+        <div style={styles.modalBackdrop} onClick={() => setSelectedItem(null)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            {selectedItem.image_url && (
+              <img src={selectedItem.image_url} alt={selectedItem.title} style={styles.modalImage} />
+            )}
+            <h2>{selectedItem.title}</h2>
+            <p>{selectedItem.description}</p>
+            <div style={styles.infoGrid}>
+              <span>🏠 סוג: {selectedItem.property_type || "לא צוין"}</span>
+              <span>📍 מיקום: {selectedItem.location || "לא צוין"}</span>
+              <span>💰 מחיר: ${selectedItem.price?.toLocaleString()}</span>
+              <span>💵 שכירות חודשית: ${selectedItem.monthly_rent?.toLocaleString()}</span>
+              <span>📈 ROI: {selectedItem.roi ? `${selectedItem.roi}%` : "N/A"}</span>
+              <span>🏦 Cap Rate: {selectedItem.cap_rate ? `${selectedItem.cap_rate}%` : "N/A"}</span>
+              <span>📏 גודל: {selectedItem.sqft ? `${selectedItem.sqft} sqft` : "N/A"}</span>
+              <span>🗓️ שנת בנייה: {selectedItem.year_built || "N/A"}</span>
+            </div>
+            <button style={styles.secondaryButton} onClick={() => setSelectedItem(null)}>סגור</button>
+          </div>
+        </div>
+      )}
 
       {/* מודאל התראות */}
       {notifyOpen && (
         <div style={styles.modalBackdrop} onClick={() => setNotifyOpen(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ marginTop: 0 }}>קבל התראות על נכסים מתאימים</h3>
-            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}>
-              <button
-                onClick={() => setContactMethod("telegram")}
-                style={contactMethod === "telegram" ? styles.chipActive : styles.chip}
-              >
-                Telegram
-              </button>
-              <button
-                onClick={() => setContactMethod("email")}
-                style={contactMethod === "email" ? styles.chipActive : styles.chip}
-              >
-                Email
-              </button>
+            <h3>📩 קבל התראות על נכסים מתאימים</h3>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <button onClick={() => setContactMethod("telegram")} style={contactMethod === "telegram" ? styles.chipActive : styles.chip}>Telegram</button>
+              <button onClick={() => setContactMethod("email")} style={contactMethod === "email" ? styles.chipActive : styles.chip}>Email</button>
             </div>
-
             <input
               type="text"
               placeholder={contactMethod === "telegram" ? "@your_handle" : "name@example.com"}
@@ -168,12 +188,10 @@ export default function Home() {
               onChange={(e) => setContactValue(e.target.value)}
               style={styles.input}
             />
-
             <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
               <button onClick={submitNotify} style={styles.button}>שמור התראה</button>
               <button onClick={() => setNotifyOpen(false)} style={styles.secondaryButton}>סגור</button>
             </div>
-
             {notifyMsg && <p style={{ marginTop: "0.5rem", color: "#333" }}>{notifyMsg}</p>}
           </div>
         </div>
@@ -203,18 +221,17 @@ const styles: any = {
   secondaryButton: { backgroundColor: "#e5e7eb", border: "none", borderRadius: "8px", padding: "0.5rem 1rem", cursor: "pointer" },
   filterBox: { background: "#fff", padding: "1rem", borderRadius: "8px", marginTop: "0.5rem", boxShadow: "0 4px 10px rgba(0,0,0,0.1)", display: "flex", flexDirection: "column", gap: "0.5rem" },
   results: { display: "flex", flexDirection: "column", gap: "1rem", width: "100%", maxWidth: "600px" },
-  card: { background: "#fff", padding: "1rem", borderRadius: "10px", boxShadow: "0 4px 10px rgba(0,0,0,0.1)" },
+  card: { background: "#fff", padding: "1rem", borderRadius: "10px", boxShadow: "0 4px 10px rgba(0,0,0,0.1)", cursor: "pointer" },
   cardTitle: { margin: 0, fontSize: "1.2rem", color: "#0070f3" },
   cardDesc: { margin: "0.5rem 0", color: "#444" },
-  tags: { display: "flex", flexWrap: "wrap", gap: "0.3rem" },
-  tag: { background: "#e0e7ff", padding: "0.2rem 0.5rem", borderRadius: "6px", fontSize: "0.8rem", color: "#3730a3" },
-  notifyButton: { backgroundColor: "#facc15", border: "none", borderRadius: "8px", padding: "0.4rem 0.8rem", marginTop: "0.5rem", cursor: "pointer" },
-  loading: { fontSize: "1.1rem", color: "#555" },
-  error: { color: "red", fontWeight: "bold" },
-
-  // Modal
+  infoGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.3rem 1rem", fontSize: "0.9rem", color: "#333" },
+  image: { width: "100%", height: "200px", objectFit: "cover", borderRadius: "8px" },
+  imagePlaceholder: { width: "100%", height: "200px", background: "#e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", color: "#666" },
   modalBackdrop: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" },
-  modal: { background: "#fff", borderRadius: "10px", padding: "1rem", width: "100%", maxWidth: "420px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" },
+  modal: { background: "#fff", borderRadius: "10px", padding: "1rem", width: "100%", maxWidth: "480px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)", overflowY: "auto", maxHeight: "90vh" },
+  modalImage: { width: "100%", borderRadius: "10px", marginBottom: "1rem" },
   chip: { background: "#e5e7eb", border: "none", borderRadius: "999px", padding: "0.3rem 0.8rem", cursor: "pointer" },
   chipActive: { background: "#0070f3", color: "#fff", border: "none", borderRadius: "999px", padding: "0.3rem 0.8rem", cursor: "pointer" },
+  loading: { fontSize: "1.1rem", color: "#555" },
+  error: { color: "red", fontWeight: "bold" },
 };
