@@ -8,84 +8,54 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const q = String(req.query.q || "").trim();
-    const {
-      minPrice,
-      maxPrice,
-      minRoi,
-      minCap,
-      type,
-      state,
-    } = req.query;
+    const { q = "", minPrice, maxPrice, minRoi, minCap, type, state } = req.query;
 
     let query = supabase.from("Listing").select("*");
 
-    // 🔍 חיפוש טקסט חופשי
+    // סינון לפי מילות חיפוש
     if (q) {
       query = query.or(
-        `title.ilike.%${q}%,location.ilike.%${q}%,state.ilike.%${q}%,description.ilike.%${q}%`
+        `title.ilike.%${q}%,description.ilike.%${q}%,location.ilike.%${q}%,state.ilike.%${q}%`
       );
     }
 
-    // 💰 פילטרים לפי מחיר
+    // סינון לפי טווח מחירים / ROI / Cap
     if (minPrice) query = query.gte("price", Number(minPrice));
     if (maxPrice) query = query.lte("price", Number(maxPrice));
-
-    // 🏘️ סוג נכס
+    if (minRoi) query = query.gte("roi", Number(minRoi));
+    if (minCap) query = query.gte("cap_rate", Number(minCap));
     if (type) query = query.ilike("property_type", `%${type}%`);
-
-    // 🌎 סינון לפי State
     if (state) query = query.ilike("state", `%${state}%`);
 
-    // 📈 אחרי שמבצעים את השאילתה, נחשב ROI ו־Cap
-    const { data, error } = await query.limit(100);
+    const { data, error } = await query.limit(50);
 
     if (error) throw error;
 
-    const results = (data || [])
-      .map((row: any) => {
-        // חישוב ROI / Cap Rate אם חסרים
-        let roi = row.roi;
-        let cap = row.cap_rate;
+    const safeData = (data || []).map((row: any) => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      price: row.price,
+      monthly_rent: row.monthly_rent,
+      cap_rate: row.cap_rate,
+      roi: row.roi,
+      state: row.state,
+      location: row.location,
+      bedrooms: row.bedrooms,
+      bathrooms: row.bathrooms,
+      sqft: row.sqft,
+      property_type: row.property_type,
+      year_built: row.year_built,
+      lot_size: row.lot_size,
+      arv_estimate: row.arv_estimate,
+      status: row.status,
+      image_url: row.image_url,
+      tags: row.tags || [],
+    }));
 
-        if (!roi && row.monthly_rent && row.price) {
-          roi = ((row.monthly_rent * 12) / row.price * 100).toFixed(2);
-        }
-        if (!cap && row.monthly_rent && row.price) {
-          cap = ((row.monthly_rent * 12) / row.price * 100).toFixed(2);
-        }
-
-        return {
-          id: row.id,
-          title: row.title || "No title",
-          description: row.description || "",
-          price: row.price || null,
-          monthly_rent: row.monthly_rent || null,
-          cap_rate: cap,
-          roi,
-          state: row.state || "",
-          location: row.location || "",
-          bedrooms: row.bedrooms || null,
-          bathrooms: row.bathrooms || null,
-          sqft: row.sqft || null,
-          property_type: row.property_type || "",
-          year_built: row.year_built || null,
-          lot_size: row.lot_size || null,
-          arv_estimate: row.arv_estimate || null,
-          status: row.status || "",
-          image_url: row.image_url || "",
-        };
-      })
-      // מסנן לפי ROI/Cap Rate אחרי החישוב
-      .filter((r) => {
-        if (minRoi && r.roi && Number(r.roi) < Number(minRoi)) return false;
-        if (minCap && r.cap_rate && Number(r.cap_rate) < Number(minCap)) return false;
-        return true;
-      });
-
-    return res.status(200).json({ ok: true, results });
+    res.status(200).json({ ok: true, results: safeData });
   } catch (e: any) {
-    console.error("Supabase search error:", e.message);
-    return res.status(500).json({ ok: false, error: e.message || "Server Error" });
+    console.error("Search error:", e.message);
+    res.status(500).json({ ok: false, error: e.message });
   }
 }
