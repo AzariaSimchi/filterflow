@@ -9,63 +9,83 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const q = String(req.query.q || "").trim();
-    const minPrice = req.query.minPrice ? Number(req.query.minPrice) : 0;
-    const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : 999999999;
-    const minRoi = req.query.minRoi ? Number(req.query.minRoi) : 0;
-    const minCap = req.query.minCap ? Number(req.query.minCap) : 0;
-    const state = String(req.query.state || "").trim();
-    const propertyType = String(req.query.propertyType || "").trim();
+    const {
+      minPrice,
+      maxPrice,
+      minRoi,
+      minCap,
+      type,
+      state,
+    } = req.query;
 
-    // שליפה בסיסית
-    let query = supabase
-      .from("Listing")
-      .select("*")
-      .gte("price", minPrice)
-      .lte("price", maxPrice)
-      .gte("roi", minRoi)
-      .gte("cap_rate", minCap);
+    let query = supabase.from("Listing").select("*");
 
-    // סינון לפי סוג נכס / מדינה / חיפוש
-    if (state) query = query.ilike("state", `%${state}%`);
-    if (propertyType) query = query.ilike("property_type", `%${propertyType}%`);
+    // 🔍 חיפוש טקסט חופשי
     if (q) {
       query = query.or(
         `title.ilike.%${q}%,location.ilike.%${q}%,state.ilike.%${q}%,description.ilike.%${q}%`
       );
-    } else {
-      query = query.limit(20);
     }
 
-    // מיון לפי ROI מהגבוה לנמוך
-    const { data, error } = await query.order("roi", { ascending: false });
+    // 💰 פילטרים לפי מחיר
+    if (minPrice) query = query.gte("price", Number(minPrice));
+    if (maxPrice) query = query.lte("price", Number(maxPrice));
+
+    // 🏘️ סוג נכס
+    if (type) query = query.ilike("property_type", `%${type}%`);
+
+    // 🌎 סינון לפי State
+    if (state) query = query.ilike("state", `%${state}%`);
+
+    // 📈 אחרי שמבצעים את השאילתה, נחשב ROI ו־Cap
+    const { data, error } = await query.limit(100);
 
     if (error) throw error;
 
-    const safeData = (data || []).map((row: any) => ({
-      id: row.id,
-      title: row.title || "No title",
-      description: row.description || "",
-      price: row.price || null,
-      monthly_rent: row.monthly_rent || null,
-      cap_rate: row.cap_rate || null,
-      roi: row.roi || null,
-      state: row.state || "",
-      location: row.location || "",
-      bedrooms: row.bedrooms || null,
-      bathrooms: row.bathrooms || null,
-      sqft: row.sqft || null,
-      property_type: row.property_type || "",
-      year_built: row.year_built || null,
-      lot_size: row.lot_size || null,
-      arv_estimate: row.arv_estimate || null,
-      status: row.status || "",
-      image_url: row.image_url || "",
-      tags: row.tags ? (Array.isArray(row.tags) ? row.tags : [row.tags]) : [],
-    }));
+    const results = (data || [])
+      .map((row: any) => {
+        // חישוב ROI / Cap Rate אם חסרים
+        let roi = row.roi;
+        let cap = row.cap_rate;
 
-    return res.status(200).json({ ok: true, results: safeData });
+        if (!roi && row.monthly_rent && row.price) {
+          roi = ((row.monthly_rent * 12) / row.price * 100).toFixed(2);
+        }
+        if (!cap && row.monthly_rent && row.price) {
+          cap = ((row.monthly_rent * 12) / row.price * 100).toFixed(2);
+        }
+
+        return {
+          id: row.id,
+          title: row.title || "No title",
+          description: row.description || "",
+          price: row.price || null,
+          monthly_rent: row.monthly_rent || null,
+          cap_rate: cap,
+          roi,
+          state: row.state || "",
+          location: row.location || "",
+          bedrooms: row.bedrooms || null,
+          bathrooms: row.bathrooms || null,
+          sqft: row.sqft || null,
+          property_type: row.property_type || "",
+          year_built: row.year_built || null,
+          lot_size: row.lot_size || null,
+          arv_estimate: row.arv_estimate || null,
+          status: row.status || "",
+          image_url: row.image_url || "",
+        };
+      })
+      // מסנן לפי ROI/Cap Rate אחרי החישוב
+      .filter((r) => {
+        if (minRoi && r.roi && Number(r.roi) < Number(minRoi)) return false;
+        if (minCap && r.cap_rate && Number(r.cap_rate) < Number(minCap)) return false;
+        return true;
+      });
+
+    return res.status(200).json({ ok: true, results });
   } catch (e: any) {
-    console.error("Supabase error:", e.message);
+    console.error("Supabase search error:", e.message);
     return res.status(500).json({ ok: false, error: e.message || "Server Error" });
   }
 }
