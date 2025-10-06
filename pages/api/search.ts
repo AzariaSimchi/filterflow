@@ -1,4 +1,3 @@
-// pages/api/search.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
 
@@ -10,17 +9,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const q = String(req.query.q || "").trim();
 
-    // שליפה של כל הנתונים מהטבלה Listing
-    const { data, error } = await supabase
-      .from("Listing")
-      .select("*")
-      .ilike("title", `%${q}%`);
+    // חשוב! שם הטבלה באות גדולה, אז חייבים לשים במרכאות כפולות
+    const query = supabase.from('"Listing"').select("*");
+
+    if (q) query.ilike("title", `%${q}%`);
+
+    const { data, error } = await query;
 
     if (error) throw error;
 
     return res.status(200).json({ ok: true, results: data || [] });
   } catch (e: any) {
-    console.error(e);
+    console.error("Supabase error:", e.message);
     return res.status(500).json({ ok: false, error: e.message || "Server Error" });
   }
 }
