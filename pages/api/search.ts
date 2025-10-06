@@ -9,8 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const q = String(req.query.q || "").trim();
 
-    // חשוב! שם הטבלה באות גדולה, אז חייבים לשים במרכאות כפולות
-    const query = supabase.from('"Listing"').select("*");
+    // שם הטבלה בדיוק כפי שמופיע ב-Supabase (Listing)
+    const query = supabase.from("Listing").select("*");
 
     if (q) query.ilike("title", `%${q}%`);
 
