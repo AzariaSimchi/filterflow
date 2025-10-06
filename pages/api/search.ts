@@ -9,16 +9,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const q = String(req.query.q || "").trim();
 
-    // שם הטבלה בדיוק כפי שמופיע ב-Supabase (Listing)
-    const query = supabase.from("Listing").select("*");
+    // נשלוף נתונים מטבלת Listing
+    let query = supabase.from("Listing").select("*");
 
-    if (q) query.ilike("title", `%${q}%`);
+    if (q) query = query.ilike("title", `%${q}%`);
 
     const { data, error } = await query;
 
     if (error) throw error;
 
-    return res.status(200).json({ ok: true, results: data || [] });
+    // נוודא שכל הנתונים בפורמט שהדף יודע לקרוא
+    const safeData = (data || []).map((row: any) => ({
+      id: row.id,
+      title: row.title || "No title",
+      description: row.description || "",
+      tags: row.tags ? (Array.isArray(row.tags) ? row.tags : [row.tags]) : [],
+    }));
+
+    return res.status(200).json({ ok: true, results: safeData });
   } catch (e: any) {
     console.error("Supabase error:", e.message);
     return res.status(500).json({ ok: false, error: e.message || "Server Error" });
