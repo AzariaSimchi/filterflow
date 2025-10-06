@@ -9,24 +9,38 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const q = String(req.query.q || "").trim();
+    const minPrice = req.query.minPrice ? Number(req.query.minPrice) : 0;
+    const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : 999999999;
+    const minRoi = req.query.minRoi ? Number(req.query.minRoi) : 0;
+    const minCap = req.query.minCap ? Number(req.query.minCap) : 0;
+    const state = String(req.query.state || "").trim();
+    const propertyType = String(req.query.propertyType || "").trim();
 
-    // נשלוף נתונים מטבלת Listing
-    let query = supabase.from("Listing").select("*");
+    // שליפה בסיסית
+    let query = supabase
+      .from("Listing")
+      .select("*")
+      .gte("price", minPrice)
+      .lte("price", maxPrice)
+      .gte("roi", minRoi)
+      .gte("cap_rate", minCap);
 
-    // אם המשתמש הכניס חיפוש – נרחיב את זה גם לשדות אחרים
+    // סינון לפי סוג נכס / מדינה / חיפוש
+    if (state) query = query.ilike("state", `%${state}%`);
+    if (propertyType) query = query.ilike("property_type", `%${propertyType}%`);
     if (q) {
       query = query.or(
         `title.ilike.%${q}%,location.ilike.%${q}%,state.ilike.%${q}%,description.ilike.%${q}%`
       );
     } else {
-      query = query.limit(20); // אם אין חיפוש – נחזיר 20 תוצאות ראשונות
+      query = query.limit(20);
     }
 
-    const { data, error } = await query;
+    // מיון לפי ROI מהגבוה לנמוך
+    const { data, error } = await query.order("roi", { ascending: false });
 
     if (error) throw error;
 
-    // עיבוד הנתונים לתצורה נוחה לממשק
     const safeData = (data || []).map((row: any) => ({
       id: row.id,
       title: row.title || "No title",
